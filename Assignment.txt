@@ -1,0 +1,328 @@
+Q. show name and idd of customer who purchased more than one item data present different table.using exists and group by clause.
+
+EXAMPLE-1
+
+Table--> Customer
+C_ID  CNAME                Loc                 
+----- -------------------- --------------------
+C1    AMIT                 PUNE                
+C2    Sumit                Delhi               
+C3    varun                Mumbai              
+C4    snehal               Latur               
+C5    Raj                  Sangli              
+C6    Mohit                Satara 
+
+Table--> order1
+OID         CID   groceries           
+----------- ----- --------------------
+          1 C2    almonds             
+          2 C3    deo soap            
+          3 C1    milk                
+          4 C2    soap                
+          5 C4    dishes              
+          6 C2    rice                
+          7 C3    dairy milk pack     
+          8 C5    chappal             
+          9 C5    Rin soap            
+
+
+Ans--> select cname,c_id  from customer where exists (select cid,count(*) from order1 where customer.c_id=order1.cid group by cid having count(*)>1)
+--->cname                c_id 
+-------------------- -----
+Sumit                C2   
+varun                C3   
+Raj                  C5  
+
+We can't show a count of how many product purchased by a each customer. for that we have to use a inner join
+Q. Above same question solve using join
+ANS-->
+select customer.cid,cname,loc,O1.Count_Y from customer
+inner join / join
+(select cid,count(*) as count_Y from order1 group by cid ) as O1 On customer.cid = O1.cid 
+	
+cid   cname                loc                  Count_Y    
+----- -------------------- -------------------- -----------
+C1    AMIT                 PUNE                           1
+C2    Sumit                Delhi                          3
+C3    varun                Mumbai                         2
+C4    snehal               Latur                          1
+C5    Raj                  Sangli                         2
+
+
+Q. select customer.cid,cname,loc,O1.Count_Y from customer
+inner join / join
+(select cid,count(*) as count_Y from order1 group by cid having count(*) >= 2 ) as O1 On customer.cid = O1.cid 
+
+cid   cname                loc                  Count_Y    
+----- -------------------- -------------------- -----------
+C2    Sumit                Delhi                          3
+C3    varun                Mumbai                         2
+C5    Raj                  Sangli                         2
+
+Q.To show all groceries  and count by using OVER BY CLAUSE
+select c.cid,cname,loc,O.groceries,count(o.cid) over (partition by o.cid) as total_count from customer c join order1 O on c.cid = o.cid
+
+cid   cname                loc                  groceries            total_count
+----- -------------------- -------------------- -------------------- -----------
+C1    AMIT                 PUNE                 milk                           1
+C2    Sumit                Delhi                soap                           3
+C2    Sumit                Delhi                almonds                        3
+C2    Sumit                Delhi                rice                           3
+C3    varun                Mumbai               dairy milk pack                2
+C3    varun                Mumbai               deo soap                       2
+C4    snehal               Latur                dishes                         1
+C5    Raj                  Sangli               chappal                        2
+C5    Raj                  Sangli               Rin soap                       2
+
+
+
+Q. To show all cname and groceries but without count.
+Query:-->select c.cid,cname,groceries from customer c join order1 o on c.cid = o.cid
+
+cid   cname                groceries           
+----- -------------------- --------------------
+C2    Sumit                almonds             
+C3    varun                deo soap            
+C1    AMIT                 milk                
+C2    Sumit                soap                
+C4    snehal               dishes              
+C2    Sumit                rice                
+C3    varun                dairy milk pack     
+C5    Raj                  chappal             
+C5    Raj                  Rin soap  
+
+
+Q.If price column added in order1 table then show the total of price puchased by each customer
+
+TABLE-order1
+OID         CID   groceries            price      
+----------- ----- -------------------- -----------
+          1 C2    almonds                      300
+          2 C3    deo soap                      80
+          3 C1    milk                          40
+          4 C2    soap                          50
+          5 C4    dishes                       150
+          6 C2    rice                          45
+          7 C3    dairy milk pack              100
+          8 C5    chappal                      250
+          9 C5    Rin soap                      20
+
+Query--> select customer.cid,cname,loc,O1.Count_Y,o1.total from customer join
+         join
+         (select cid,count(*) as count_Y,sum(price) as total from order1 group by cid) as O1 On customer.cid = O1.cid
+         
+cid   cname                loc                        Count_Y     total      
+----- -------------------- -------------------- ----------- -----------
+C1    AMIT                 PUNE                           1          40
+C2    Sumit                Delhi                          3         395
+C3    varun                Mumbai                         2         180
+C4    snehal               Latur                          1         150
+C5    Raj                  Sangli                         2         270
+
+
+
+EXAMPLE-2
+
+
+Q.Details of All emp who worked in any department in (dept1 table)
+
+Table-Emp4
+eno         ename                eadd                
+----------- -------------------- --------------------
+          1 ajinkya              solapur             
+          2 ganesh               pandharpur          
+          3 akash                pune                
+          4 vishal               mumbai              
+          5 virendra             nashik              
+          6 Virendra             Mumbai 
+
+table
+ dno        dname                eno        
+---------- -------------------- -----------
+D1         HR                             1
+D2         IT                             2
+D3         Marketing                      4
+D4         Finance                        5
+
+1. using a nested subqueiry:----> bottom up
+Query:-->  select * from emp4 where eno in (select eno from dept1)
+
+eno         ename                eadd                
+----------- -------------------- --------------------
+          1 ajinkya              solapur             
+          2 ganesh               pandharpur          
+          4 vishal               mumbai              
+          5 virendra             nashik 
+
+2. Corelated subquery:---> Top down approach--> give answer in TRUE and FALSE
+Query:--> select * from emp4 where exists (select eno from dept1 where emp4.eno=dept1.eno)
+
+eno         ename                eadd                
+----------- -------------------- --------------------
+          1 ajinkya              solapur             
+          2 ganesh               pandharpur          
+          4 vishal               mumbai              
+          5 virendra             nashik 
+          
+3.using Joins:
+query:--😀️>select * from emp4 join dept1 on emp4.eno=dept1.eno
+
+eno         ename                eadd                 dno        dname                eno        
+----------- -------------------- -------------------- ---------- -------------------- -----------
+          1 ajinkya              solapur              D1         HR                             1
+          2 ganesh               pandharpur           D2         IT                             2
+          4 vishal               mumbai               D3         Marketing                      4
+          5 virendra             nashik               D4         Finance                        5
+
+Query:--->select ename,dno,dname from emp4 join dept1 on emp4.eno=dept1.eno
+
+ename                dno        dname               
+-------------------- ---------- --------------------
+ajinkya              D1         HR                  
+ganesh               D2         IT                  
+vishal               D3         Marketing           
+virendra             D4         Finance   
+
+
+Only one expression can be specified in the select list when the subquery is not introduced with EXISTS.
+
+ASSIGNMENT.Q. Need to calculate the Running salary from over_test table over partition by Gender?
+
+Q.Running salary as per eid.
+select *,(select sum(O2.salary) from over_test as O2 where o2.gender<=o1.gender ) as running_total from over_test as o1
+
+eid         firstname            Gender salary      running_total
+----------- -------------------- ------ ----------- -------------
+          1 Mohini               F             1000          1000
+          2 Rohit                M             2000          3000
+          3 Amit                 M             4000          7000
+          4 Sonal                F             5000         12000
+          5 Minal                F             6000         18000
+          6 Amar                 M             3600         21600
+          7 Shital               F             4500         26100
+          8 Sohil                M             6000         32100
+          9 praveen              M             9000         41100
+         10 Mithali              F             2000         43100
+         11 seema                F             2000         45100
+         12 meena                F             6000         51100
+
+Q.select * ,sum(salary) over (order by [eid]) as running_total from over_test
+
+eid         firstname            Gender salary      running_total
+----------- -------------------- ------ ----------- -------------
+          1 Mohini               F             1000          1000
+          2 Rohit                M             2000          3000
+          3 Amit                 M             4000          7000
+          4 Sonal                F             5000         12000
+          5 Minal                F             6000         18000
+          6 Amar                 M             3600         21600
+          7 Shital               F             4500         26100
+          8 Sohil                M             6000         32100
+          9 praveen              M             9000         41100
+         10 Mithali              F             2000         43100
+         11 seema                F             2000         45100
+         12 meena                F             6000         51100
+
+Q.select * ,sum(salary) over (order by [gender]) as running_total from over_test
+
+eid         firstname            Gender salary      running_total
+----------- -------------------- ------ ----------- -------------
+          1 Mohini               F             1000         26500
+          4 Sonal                F             5000         26500
+          5 Minal                F             6000         26500
+          7 Shital               F             4500         26500
+         10 Mithali              F             2000         26500
+         11 seema                F             2000         26500
+         12 meena                F             6000         26500
+          8 Sohil                M             6000         51100
+          9 praveen              M             9000         51100
+          6 Amar                 M             3600         51100
+          2 Rohit                M             2000         51100
+          3 Amit                 M             4000         51100
+
+
+Q.select * , sum(salary) over (partition by gender order by eid ) as running_total from over_test-------------->EXPECTED ANS
+
+eid         firstname            Gender salary      running_total
+----------- -------------------- ------ ----------- -------------
+          1 Mohini               F             1000          1000
+          4 Sonal                F             5000          6000
+          5 Minal                F             6000         12000
+          7 Shital               F             4500         16500
+         10 Mithali              F             2000         18500
+         11 seema                F             2000         20500
+         12 meena                F             6000         26500
+          2 Rohit                M             2000          2000
+          3 Amit                 M             4000          6000
+          6 Amar                 M             3600          9600
+          8 Sohil                M             6000         15600
+          9 praveen              M             9000         24600
+
+Q.Only Females Runnig salary 
+select * , sum(salary) over (partition by gender order by eid) as running_total from over_test where gender = 'F'
+
+eid         firstname            Gender salary      running_total
+----------- -------------------- ------ ----------- -------------
+          1 Mohini               F             1000          1000
+          4 Sonal                F             5000          6000
+          5 Minal                F             6000         12000
+          7 Shital               F             4500         16500
+         10 Mithali              F             2000         18500
+         11 seema                F             2000         20500
+         12 meena                F             6000         26500
+
+Q.only male running salary
+select * , sum(salary) over (partition by gender order by eid) as running_total from over_test where gender = 'M'
+
+eid         firstname            Gender salary      running_total
+----------- -------------------- ------ ----------- -------------
+          2 Rohit                M             2000          2000
+          3 Amit                 M             4000          6000
+          6 Amar                 M             3600          9600
+          8 Sohil                M             6000         15600
+          9 praveen              M             9000         24600
+
+
+
+select * , sum(salary) over (partition by gender ) as running_total from over_test
+
+eid         firstname            Gender salary      running_total
+----------- -------------------- ------ ----------- -------------
+          1 Mohini               F             1000         26500
+          4 Sonal                F             5000         26500
+          5 Minal                F             6000         26500
+          7 Shital               F             4500         26500
+         10 Mithali              F             2000         26500
+         11 seema                F             2000         26500
+         12 meena                F             6000         26500
+          8 Sohil                M             6000         24600
+          9 praveen              M             9000         24600
+          6 Amar                 M             3600         24600
+          2 Rohit                M             2000         24600
+          3 Amit                 M             4000         24600
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
