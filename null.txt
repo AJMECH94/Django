@@ -1,0 +1,132 @@
+NULL VALUE REPLACEMENT
+We can replace NUll values from column by using three fuctions:
+A.ISNULL()
+B.Coalesce()
+c.Case()
+
+
+A.ISNULL()
+-->This function will help us to replace NULL value with any other user defined value.
+-->synatx: ISNULL(Col_name,'String')
+
+e.g.
+create table NULL_TEST1(NID int, EMP_NAME varchar(20),Manager varchar(20))
+
+insert into NULL_TEST1 values (1,'Piya','Sohan')
+insert into NULL_TEST1 values (2,'kate',NULL)
+insert into NULL_TEST1 values (3,'meera','aman')
+insert into NULL_TEST1 values (4,'amit',NULL)
+insert into NULL_TEST1 values (5,'sumit','Kiran')
+
+Q.replace null values from given table wih 'no manager' 
+select nid,emp_name,isnull(manager,'no manager') from null_test1
+
+
+B. COALESCE()
+--> It will find or try to locate first appearance of NON-NULL value from a row of table.
+--> If it is not possible to find or locate NON-NULL value then it always returns a NULL value.
+--> space is considered as varchar
+
+TABLE
+create table COALESCE_TEST (CID int,FN varchar(20),MN varchar(20),LN varchar(20), sal int)
+
+insert into COALESCE_TEST values (1,'A',NULL,NULL,200)
+insert into COALESCE_TEST values (2,NULL,'B',NULL,450)
+insert into COALESCE_TEST values (3,NULL,NULL,'C',200)
+insert into COALESCE_TEST values (5,'',NULL,'D',200)
+insert into COALESCE_TEST values (6,'E','F','G',200)
+insert into COALESCE_TEST values (Null,NULL,NULL,NULL,500)
+insert into COALESCE_TEST values (7,'','T','H',500)
+
+e.g
+select cid,coalesce(fn,mn,ln) as name,sal from test
+cid         name                 sal        
+----------- -------------------- -----------
+          1 A                            200
+          2 B                            450
+          3 C                            200
+          5                              200
+       NULL NULL                         500
+
+C.CASE STATEMENT
+-->Case statement identify the condition and returns a values.
+-->It will work like IF-ELSE statement
+-->If there is no ELSE statement then it will return NULL Value .
+
+
+Q Replace a manager with 'no manager' if it is null and add manager according to condition
+e.g.
+select NID,EMP_NAME,manager,CASE
+				when Manager IS Null then 'NO Manager'
+				when Manager ='Sohan' then 'Priyanka'
+				ELSE Manager
+				END as Manager 				
+from NULL_TEST1
+
+
+Q. Update null-test table emp_name,manager column by using a case statement 
+e.g.
+update null_test1 set emp_name= case 
+                            when emp_name= 'piya' then 'Dhiraj' 
+                            when emp_name='amit' then 'rohit' 
+                            else emp_name 
+                            end,
+                            manager=case when nid in (1,2) then 'prashant'
+                            when nid in (4,5) then 'nikhil' 
+                            else manager 
+                            end
+
+
+Exist and Not Exist Clause
+TABLE
+Create Table customer(C_ID varchar(5) primary key ,CNAME varchar(20),Loc varchar(20))
+
+insert into customer values('C1','AMIT','PUNE')
+insert into customer values('C2','Sumit','Delhi')
+insert into customer values('C3','varun','Mumbai')
+insert into customer values('C4','snehal','Latur')
+insert into customer values('C5','Raj','Sangli')
+insert into customer values('C6','Mohit','Satara')
+
+create table order1(OID int primary key, CID varchar(5),groceries varchar(20))
+
+insert into order1 values(1,'C2','almonds')
+insert into order1 values(2,'C3','deo soap')
+insert into order1 values(3,'C1','milk')
+insert into order1 values(4,'C2','soap') 
+insert into order1 values(5,'C4','dishes')
+insert into order1 values(6,'C2','rice')
+select * from customer
+
+e.g.select * from customer  c where exists (select * from order1 o where c.c_id = o.cid)
+ans-->C_ID  CNAME                Loc                 
+----- -------------------- --------------------
+C1    AMIT                 PUNE                
+C2    Sumit                Delhi               
+C3    varun                Mumbai              
+C4    snehal               Latur               
+
+e.g. select * from customer c where not exists (select * from order1 o where c.c_id = o.cid)
+ans-->C_ID  CNAME                Loc                 
+----- -------------------- --------------------
+C5    Raj                  Sangli              
+C6    Mohit                Satara    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
